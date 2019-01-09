@@ -10,10 +10,11 @@ import com.alibaba.excel.support.ExcelTypeEnum;
 import com.fq.alibaba.easyexcel.encapsulation.excel.core.ExcelListener;
 import com.fq.alibaba.easyexcel.encapsulation.excel.core.ExcelWriterFactory;
 import com.fq.alibaba.easyexcel.encapsulation.excel.exception.ExcelException;
-import com.fq.alibaba.easyexcel.encapsulation.excel.model.ExcelStyleModel;
-import com.fq.alibaba.easyexcel.encapsulation.excel.model.ReadExcelResult;
+import com.fq.alibaba.easyexcel.encapsulation.excel.pojo.ReadExcelResult;
+import com.fq.alibaba.easyexcel.encapsulation.excel.style.ExcelStyleModel;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -100,7 +101,7 @@ public class ExcelUtil {
      * @param sheetName 导入文件的 sheet 名
      */
     public static <T> void writeExcel(HttpServletResponse response, List<T> list,
-                                  String fileName, String sheetName,Class<T> c) {
+                                      String fileName, String sheetName, Class<T> c) {
 
         ExcelWriter writer = new ExcelWriter(getOutputStream(fileName, response), ExcelTypeEnum.XLSX);
         Sheet sheet = new Sheet(1, 0, (Class<? extends BaseRowModel>) c);
@@ -130,7 +131,7 @@ public class ExcelUtil {
      * @param sheetName 导入文件的 sheet 名
      */
     public static <T> ExcelWriterFactory writeExcelWithSheets(HttpServletResponse response, List<T> list,
-                                                          String fileName, String sheetName,Class<T> c) {
+                                                              String fileName, String sheetName, Class<T> c) {
         ExcelWriterFactory writer = new ExcelWriterFactory(getOutputStream(fileName, response), ExcelTypeEnum.XLSX);
         Sheet sheet = new Sheet(1, 0, (Class<? extends BaseRowModel>) c);
         sheet.setSheetName(sheetName);

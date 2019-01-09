@@ -1,4 +1,4 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.model;
+package com.fq.alibaba.easyexcel.encapsulation.excel.style;
 
 /**
  * @工程名:common-utils
