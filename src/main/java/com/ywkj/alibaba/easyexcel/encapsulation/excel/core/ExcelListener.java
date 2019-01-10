@@ -95,12 +95,12 @@ public  class ExcelListener<T> extends AnalysisEventListener {
      */
     private boolean fieldLegalCheck(Field field,Object object) throws IllegalAccessException {
         if(!field.getType().equals(String.class)){
-            throw new ExcelException("model字段必须是 String 类型");
+            throw new ExcelException("model中所有字段必须是 String 类型");
         }
         String fieldValue=StringUtils.deleteWhitespace((String)field.get(object));
         field.set(object,fieldValue==null?"":fieldValue);
         if(!field.isAnnotationPresent(ExcelProperty.class)){
-            throw new ExcelException("model字段必须使用 @ExcelProperty 注解");
+            throw new ExcelException("model中所有字段必须使用 @ExcelProperty 注解");
         }
         ExcelProperty excelProperty=field.getAnnotation(ExcelProperty.class);
         String[] values=excelProperty.value();
