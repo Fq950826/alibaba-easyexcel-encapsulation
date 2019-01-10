@@ -46,7 +46,7 @@ public class ExcelUtil {
             }
             reader.read(sheet);
         }
-        return new ReadExcelResult(excelListener.getSuccessList(),excelListener.getFailList());
+        return new ReadExcelResult(excelListener.getSuccessList(),excelListener.getFailList(),excelListener.getSuccessList().size()+excelListener.getFailList().size());
     }
     /**
      * 读取某个 sheet 的 Excel
@@ -64,7 +64,7 @@ public class ExcelUtil {
             return null;
         }
         reader.read(new Sheet(sheetNo, headLineNum, (Class<? extends BaseRowModel>) t));
-        return new ReadExcelResult(excelListener.getSuccessList(),excelListener.getFailList());
+        return new ReadExcelResult(excelListener.getSuccessList(),excelListener.getFailList(),excelListener.getSuccessList().size()+excelListener.getFailList().size());
     }
 
 
