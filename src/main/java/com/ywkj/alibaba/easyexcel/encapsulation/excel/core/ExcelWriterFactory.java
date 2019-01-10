@@ -1,4 +1,4 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.core;
+package com.ywkj.alibaba.easyexcel.encapsulation.excel.core;
 
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.metadata.BaseRowModel;

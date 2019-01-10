@@ -1,4 +1,4 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.pojo;
+package com.ywkj.alibaba.easyexcel.encapsulation.excel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;

@@ -1,4 +1,4 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.exception;
+package com.ywkj.alibaba.easyexcel.encapsulation.excel.exception;
 
 /**
  * Created by Fq on 2019/01/07.

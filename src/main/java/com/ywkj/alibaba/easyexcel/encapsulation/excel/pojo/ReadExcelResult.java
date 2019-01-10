@@ -1,4 +1,4 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.pojo;
+package com.ywkj.alibaba.easyexcel.encapsulation.excel.pojo;
 
 import java.util.List;
 

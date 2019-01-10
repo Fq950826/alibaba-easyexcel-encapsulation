@@ -1,13 +1,14 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.core;
+package com.ywkj.alibaba.easyexcel.encapsulation.excel.core;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.fq.alibaba.easyexcel.encapsulation.excel.annotation.NotEmpty;
-import com.fq.alibaba.easyexcel.encapsulation.excel.annotation.TypeConstraint;
-import com.fq.alibaba.easyexcel.encapsulation.excel.enums.PropertyType;
-import com.fq.alibaba.easyexcel.encapsulation.excel.exception.ExcelException;
-import com.fq.alibaba.easyexcel.encapsulation.excel.util.RegularExpressionUtil;
+import com.ywkj.alibaba.easyexcel.encapsulation.excel.annotation.NotEmpty;
+import com.ywkj.alibaba.easyexcel.encapsulation.excel.annotation.TypeConstraint;
+import com.ywkj.alibaba.easyexcel.encapsulation.excel.enums.PropertyType;
+import com.ywkj.alibaba.easyexcel.encapsulation.excel.exception.ExcelException;
+import com.ywkj.alibaba.easyexcel.encapsulation.excel.util.ExcelDateUtils;
+import com.ywkj.alibaba.easyexcel.encapsulation.excel.util.RegularExpressionUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -15,6 +16,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,13 +42,13 @@ public  class ExcelListener<T> extends AnalysisEventListener {
             try {
                 Field reasonsForFailureField = c.getSuperclass().getDeclaredField("reasonsForFailure");
                 if(reasonsForFailureField==null){
-                    throw new ExcelException("model中找不到reasonsForFailure字段");
+                    throw new ExcelException("model中需集成 DefaultRowModel 或者添加 reasonsForFailure 字段");
                 }else{
                     reasonsForFailureField.setAccessible(true);
                     this.reasonsForFailureField=reasonsForFailureField;
                 }
             } catch (Exception e) {
-                throw new ExcelException("model中找不到reasonsForFailure字段");
+                throw new ExcelException("model中需集成 DefaultRowModel 或者添加 reasonsForFailure 字段");
             }
             Field[] fields=c.getDeclaredFields();
             for(Field field:fields){
@@ -71,49 +73,45 @@ public  class ExcelListener<T> extends AnalysisEventListener {
      * @return
      */
     private boolean legalCheck(Object object) {
+        boolean success=true;
         try {
             for (Field field : fields) {
-                if (!fieldLegalCheck(reasonsForFailureField, field, object)) {
-                    return false;
+                if (!fieldLegalCheck(field, object)) {
+                    success= false;
                 }
             }
         }catch (Exception e){
             return false;
         }
-        return true;
+        return success;
     }
 
 
     /**
      * 字段合法性校验
-     * @param reasonsForFailureField
      * @param field
      * @param object
      * @return
      */
-    private boolean fieldLegalCheck(Field reasonsForFailureField,Field field,Object object) throws IllegalAccessException {
+    private boolean fieldLegalCheck(Field field,Object object) throws IllegalAccessException {
         if(!field.getType().equals(String.class)){
-            return false;
+            throw new ExcelException("model字段必须是 String 类型");
         }
         String fieldValue=StringUtils.deleteWhitespace((String)field.get(object));
-        field.set(object,fieldValue);
+        field.set(object,fieldValue==null?"":fieldValue);
         if(!field.isAnnotationPresent(ExcelProperty.class)){
-            return false;
+            throw new ExcelException("model字段必须使用 @ExcelProperty 注解");
         }
         ExcelProperty excelProperty=field.getAnnotation(ExcelProperty.class);
         String[] values=excelProperty.value();
         //字段是否为空
         if(field.isAnnotationPresent(NotEmpty.class)&&StringUtils.isEmpty(fieldValue)){
-            reasonsForFailureField.set(object,(excelProperty.value().length==0?"": Arrays.toString(excelProperty.value())+"-")+"字段为空!");
+            constraintFail(object,values,"必填为空");
             return false;
         }
 
         //字段是否约束
-        if(field.isAnnotationPresent(TypeConstraint.class)){
-            if(StringUtils.isEmpty(fieldValue)){
-                reasonsForFailureField.set(object,(excelProperty.value().length==0?"":Arrays.toString(excelProperty.value())+"-")+"字段为空!");
-                return false;
-            }
+        if(field.isAnnotationPresent(TypeConstraint.class)&&StringUtils.isNotEmpty(fieldValue)){
             TypeConstraint typeConstraint=field.getAnnotation(TypeConstraint.class);
             String msg=typeConstraint.msg();
             //正则约束
@@ -123,11 +121,17 @@ public  class ExcelListener<T> extends AnalysisEventListener {
             }
             //直接约束
             if(typeConstraint.type().equals(PropertyType.DATE)){
+                //该字段为时间类型
                 try {
                     DATE_FORMAT.parse(fieldValue);
                 }catch (Exception e){
-                    constraintFail(object,values,msg);
-                    return false;
+                    try{
+                        Date date = ExcelDateUtils.getDate(Integer.parseInt(fieldValue));
+                        field.set(object,DATE_FORMAT.format(date));
+                    }catch (Exception ex){
+                        constraintFail(object,values,msg);
+                        return false;
+                    }
                 }
             }else{
                 if(!typeConstraint.type().equals(PropertyType.ALL)&&!RegularExpressionUtil.isMatch(typeConstraint.type().value(),fieldValue)){
@@ -147,7 +151,12 @@ public  class ExcelListener<T> extends AnalysisEventListener {
      * @throws IllegalAccessException
      */
     private void constraintFail(Object object,String[] values,String msg) throws IllegalAccessException {
-        reasonsForFailureField.set(object,(values.length==0?"":Arrays.toString(values)+"字段-")+msg);
+        String reason =(String)reasonsForFailureField.get(object);
+        if(StringUtils.isEmpty(reason)) {
+            reasonsForFailureField.set(object, (values.length == 0 ? "" : Arrays.toString(values) + "字段-") + msg);
+        }else{
+            reasonsForFailureField.set(object, reason+" ; "+(values.length == 0 ? "" : Arrays.toString(values) + "字段-") + msg);
+        }
     }
 
 

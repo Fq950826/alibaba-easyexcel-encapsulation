@@ -1,4 +1,4 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.annotation;
+package com.ywkj.alibaba.easyexcel.encapsulation.excel.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

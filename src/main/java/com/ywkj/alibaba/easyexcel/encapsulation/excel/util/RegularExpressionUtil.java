@@ -1,4 +1,4 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.util;
+package com.ywkj.alibaba.easyexcel.encapsulation.excel.util;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

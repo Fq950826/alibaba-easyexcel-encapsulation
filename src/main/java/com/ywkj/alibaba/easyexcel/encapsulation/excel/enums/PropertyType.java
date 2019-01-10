@@ -1,4 +1,4 @@
-package com.fq.alibaba.easyexcel.encapsulation.excel.enums;
+package com.ywkj.alibaba.easyexcel.encapsulation.excel.enums;
 
 public enum PropertyType {
     //所有
