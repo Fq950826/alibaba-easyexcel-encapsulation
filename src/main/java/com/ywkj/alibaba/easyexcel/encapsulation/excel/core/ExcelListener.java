@@ -14,10 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Fq on 2019/01/07.
@@ -34,6 +31,7 @@ public  class ExcelListener<T> extends AnalysisEventListener {
 
     private Field[] fields=null;
 
+    private Map<Integer,Boolean> allFieldsNullOfRawMap=new HashMap();
 
     @Override
     public void invoke(Object object, AnalysisContext context) {
@@ -56,14 +54,18 @@ public  class ExcelListener<T> extends AnalysisEventListener {
             }
             this.fields=fields;
         }
+        //初始化当前行所有字段都为空
+        allFieldsNullOfRawMap.put(context.getCurrentRowNum(),true);
+        //合法性校验
+        Boolean legal=legalCheck(object,context);
 
-        if(legalCheck(object)){
-            //数据合法
-            successList.add((T)object);
-            return;
+        if(!allFieldsNullOfRawMap.get(context.getCurrentRowNum())){
+            if(legal){
+                successList.add((T)object);
+            }else{
+                failList.add((T)object);
+            }
         }
-        //数据不合法
-        failList.add((T)object);
     }
 
 
@@ -72,11 +74,11 @@ public  class ExcelListener<T> extends AnalysisEventListener {
      * @param object
      * @return
      */
-    private boolean legalCheck(Object object) {
+    private boolean legalCheck(Object object,AnalysisContext context) {
         boolean success=true;
         try {
             for (Field field : fields) {
-                if (!fieldLegalCheck(field, object)) {
+                if (!fieldLegalCheck(field, object,context)) {
                     success= false;
                 }
             }
@@ -93,11 +95,14 @@ public  class ExcelListener<T> extends AnalysisEventListener {
      * @param object
      * @return
      */
-    private boolean fieldLegalCheck(Field field,Object object) throws IllegalAccessException {
+    private boolean fieldLegalCheck(Field field,Object object,AnalysisContext context) throws IllegalAccessException {
         if(!field.getType().equals(String.class)){
             throw new ExcelException("model中所有字段必须是 String 类型");
         }
         String fieldValue=StringUtils.deleteWhitespace((String)field.get(object));
+        if(!StringUtils.isEmpty(fieldValue)){
+            allFieldsNullOfRawMap.put(context.getCurrentRowNum(),false);
+        }
         field.set(object,fieldValue==null?"":fieldValue);
         if(!field.isAnnotationPresent(ExcelProperty.class)){
             throw new ExcelException("model中所有字段必须使用 @ExcelProperty 注解");
